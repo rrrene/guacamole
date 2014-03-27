@@ -170,22 +170,23 @@ module Guacamole
     module ClassMethods
 
 
+
       def _define_before_my_callback(klass, callback) #:nodoc:
-        collection_class = Object.const_get("#{klass.to_s.pluralize.capitalize}Collection")
+        collection_class =Guacamole::DocumentModelMapper.collection_for(klass)
         klass.define_singleton_method("before_#{callback}") do |*args, &block|
           collection_class.set_callback(:"#{callback}", :before, *args, &block)
         end
       end
 
       def _define_around_my_callback(klass, callback) #:nodoc:
-        collection_class = Object.const_get("#{klass.to_s.pluralize.capitalize}Collection")
+        collection_class =Guacamole::DocumentModelMapper.collection_for(klass)
         klass.define_singleton_method("around_#{callback}") do |*args, &block|
           collection_class.set_callback(:"#{callback}", :around, *args, &block)
         end
       end
 
       def _define_after_my_callback(klass, callback) #:nodoc:
-        collection_class = Object.const_get("#{klass.to_s.pluralize.capitalize}Collection")
+        collection_class =Guacamole::DocumentModelMapper.collection_for(klass)
         klass.define_singleton_method("after_#{callback}") do |*args, &block|
           options = args.extract_options!
           options[:prepend] = true
