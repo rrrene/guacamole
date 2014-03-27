@@ -177,7 +177,7 @@ module Guacamole
               else
                 model_or_key
               end
-        trigger_callback :destroy, model do
+        trigger_callback :destroy, model_or_key do
           fetch_document(key).delete
         end
         key
