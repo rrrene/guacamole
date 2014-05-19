@@ -169,28 +169,28 @@ module Guacamole
 
     module ClassMethods
       def _define_before_my_callback(klass, callback) #:nodoc:
-        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
-        klass.define_singleton_method("before_#{callback}") do |*args, &block|
-          collection_class.set_callback(:"#{callback}", :before, *args, &block)
-        end
+        # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
+        # klass.define_singleton_method("before_#{callback}") do |*args, &block|
+        #   collection_class.set_callback(:"#{callback}", :before, *args, &block)
+        # end
       end
 
       def _define_around_my_callback(klass, callback) #:nodoc:
-        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
-        klass.define_singleton_method("around_#{callback}") do |*args, &block|
-          collection_class.set_callback(:"#{callback}", :around, *args, &block)
-        end
+        # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
+        # klass.define_singleton_method("around_#{callback}") do |*args, &block|
+        #   collection_class.set_callback(:"#{callback}", :around, *args, &block)
+        # end
       end
 
       def _define_after_my_callback(klass, callback) #:nodoc:
-        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
-        klass.define_singleton_method("after_#{callback}") do |*args, &block|
-          options = args.extract_options!
-          options[:prepend] = true
-          conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v| v != false }
-          options[:if] = Array(options[:if]) << conditional
-          collection_class.set_callback(:"#{callback}", :after, *(args << options), &block)
-        end
+        # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
+        # klass.define_singleton_method("after_#{callback}") do |*args, &block|
+        #   options = args.extract_options!
+        #   options[:prepend] = true
+        #   conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v| v != false }
+        #   options[:if] = Array(options[:if]) << conditional
+        #   collection_class.set_callback(:"#{callback}", :after, *(args << options), &block)
+        # end
       end
     end
 
