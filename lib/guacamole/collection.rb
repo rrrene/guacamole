@@ -32,8 +32,7 @@ module Guacamole
     module ClassMethods
       extend Forwardable
 
-
-      def trigger_callback(kind, model,&block)
+      def trigger_callback(kind, model, &block)
         cbs = send("_#{kind}_callbacks")
         runner = cbs.compile
         e = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil, block)
@@ -146,7 +145,6 @@ module Guacamole
       #   PodcastsCollection.save(podcast)
       #   podcast.key #=> '27214247'
       def create(model)
-
         model_validation = true
         trigger_callback :validation, model do
           model_validation = model.valid?
@@ -159,8 +157,8 @@ module Guacamole
             create_document_from(model)
           end
         end
-        model
 
+        model
       end
 
       # Delete a model from the database
@@ -380,10 +378,7 @@ module Guacamole
 
     included do
       include ActiveSupport::Callbacks
-      define_callbacks  :save , :validation,:create, :update, :destroy
+      define_callbacks :save, :validation, :create, :update, :destroy
     end
-
-
-
   end
 end
