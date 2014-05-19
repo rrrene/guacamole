@@ -168,39 +168,31 @@ module Guacamole
     extend ActiveSupport::Concern
 
     module ClassMethods
-
-
-
       def _define_before_my_callback(klass, callback) #:nodoc:
-        collection_class =Guacamole::DocumentModelMapper.collection_for(klass)
+        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
         klass.define_singleton_method("before_#{callback}") do |*args, &block|
           collection_class.set_callback(:"#{callback}", :before, *args, &block)
         end
       end
 
       def _define_around_my_callback(klass, callback) #:nodoc:
-        collection_class =Guacamole::DocumentModelMapper.collection_for(klass)
+        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
         klass.define_singleton_method("around_#{callback}") do |*args, &block|
           collection_class.set_callback(:"#{callback}", :around, *args, &block)
         end
       end
 
       def _define_after_my_callback(klass, callback) #:nodoc:
-        collection_class =Guacamole::DocumentModelMapper.collection_for(klass)
+        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
         klass.define_singleton_method("after_#{callback}") do |*args, &block|
           options = args.extract_options!
           options[:prepend] = true
-          conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v|
-            v != false
-          }
+          conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v| v != false }
           options[:if] = Array(options[:if]) << conditional
           collection_class.set_callback(:"#{callback}", :after, *(args << options), &block)
         end
       end
-
-
     end
-
 
     # @!parse include ActiveModel::Validations
     # @!parse extend ActiveModel::Naming
@@ -217,11 +209,10 @@ module Guacamole
       def self.define_my_callbacks(*callbacks)
         options = callbacks.extract_options!
         options = {
-            terminator: ->(_,result) { result == false },
-            skip_after_callbacks_if_terminated: true,
-            scope: [:kind, :name],
-            #only: [:before, :around, :after]
-            only: [:before, :after]
+          terminator: ->(_, result) { result == false },
+          skip_after_callbacks_if_terminated: true,
+          scope: [:kind, :name],
+          only: [:before, :after]
         }.merge!(options)
 
         types = Array(options.delete(:only))
@@ -256,10 +247,8 @@ module Guacamole
             attributes.all? do |attribute, value|
               other_value = other.send(attribute)
               case value
-                when DateTime, Time
-                  value.to_s == other_value.to_s # :(
-                else
-                  value == other_value
+              when DateTime, Time then value.to_s == other_value.to_s # :(
+              else value == other_value
               end
             end
       end
