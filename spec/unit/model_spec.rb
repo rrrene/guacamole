@@ -7,7 +7,7 @@ class TestModelsCollection
   include Guacamole::Collection
 end
 
-class ModelsCollection
+class OtherModelsCollection
   include Guacamole::Collection
 end
 

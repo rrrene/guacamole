@@ -168,32 +168,32 @@ module Guacamole
     extend ActiveSupport::Concern
 
     module ClassMethods
-      def _define_before_my_callback(_, _) #:nodoc:
+      def _define_before_my_callback(klass, callback) #:nodoc:
         # TODO: Fix and add back in (klass, callback)
-        # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
-        # klass.define_singleton_method("before_#{callback}") do |*args, &block|
-        #   collection_class.set_callback(:"#{callback}", :before, *args, &block)
-        # end
+        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
+        klass.define_singleton_method("before_#{callback}") do |*args, &block|
+          collection_class.set_callback(:"#{callback}", :before, *args, &block)
+        end
       end
 
-      def _define_around_my_callback(_, _) #:nodoc:
+      def _define_around_my_callback(klass, callback) #:nodoc:
         # TODO: Fix and add back in (klass, callback)
-        # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
-        # klass.define_singleton_method("around_#{callback}") do |*args, &block|
-        #   collection_class.set_callback(:"#{callback}", :around, *args, &block)
-        # end
+        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
+        klass.define_singleton_method("around_#{callback}") do |*args, &block|
+          collection_class.set_callback(:"#{callback}", :around, *args, &block)
+        end
       end
 
-      def _define_after_my_callback(_, _) #:nodoc:
+      def _define_after_my_callback(klass, callback) #:nodoc:
         # TODO: Fix and add back in (klass, callback)
-        # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
-        # klass.define_singleton_method("after_#{callback}") do |*args, &block|
-        #   options = args.extract_options!
-        #   options[:prepend] = true
-        #   conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v| v != false }
-        #   options[:if] = Array(options[:if]) << conditional
-        #   collection_class.set_callback(:"#{callback}", :after, *(args << options), &block)
-        # end
+        collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
+        klass.define_singleton_method("after_#{callback}") do |*args, &block|
+          options = args.extract_options!
+          options[:prepend] = true
+          conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v| v != false }
+          options[:if] = Array(options[:if]) << conditional
+          collection_class.set_callback(:"#{callback}", :after, *(args << options), &block)
+        end
       end
     end
 
