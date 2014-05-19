@@ -72,6 +72,9 @@ TooManyStatements:
   - Guacamole::DocumentModelMapper#model_to_document
   - Guacamole::Collection::ClassMethods#create_document_from
   - Guacamole::Collection::ClassMethods#create_referenced_by_models_of
+  - Guacamole::Model#self.define_my_callbacks
+  - Guacamole::Collection::ClassMethods#create
+  - Guacamole::Collection::ClassMethods#replace
   max_statements: 5
 UncommunicativeMethodName:
   enabled: true

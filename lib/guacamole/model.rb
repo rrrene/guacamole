@@ -168,21 +168,24 @@ module Guacamole
     extend ActiveSupport::Concern
 
     module ClassMethods
-      def _define_before_my_callback(klass, callback) #:nodoc:
+      def _define_before_my_callback(_, _) #:nodoc:
+        # TODO: Fix and add back in (klass, callback)
         # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
         # klass.define_singleton_method("before_#{callback}") do |*args, &block|
         #   collection_class.set_callback(:"#{callback}", :before, *args, &block)
         # end
       end
 
-      def _define_around_my_callback(klass, callback) #:nodoc:
+      def _define_around_my_callback(_, _) #:nodoc:
+        # TODO: Fix and add back in (klass, callback)
         # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
         # klass.define_singleton_method("around_#{callback}") do |*args, &block|
         #   collection_class.set_callback(:"#{callback}", :around, *args, &block)
         # end
       end
 
-      def _define_after_my_callback(klass, callback) #:nodoc:
+      def _define_after_my_callback(_, _) #:nodoc:
+        # TODO: Fix and add back in (klass, callback)
         # collection_class = Guacamole::DocumentModelMapper.collection_for(klass)
         # klass.define_singleton_method("after_#{callback}") do |*args, &block|
         #   options = args.extract_options!

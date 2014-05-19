@@ -35,8 +35,8 @@ module Guacamole
       def trigger_callback(kind, model, &block)
         cbs = send("_#{kind}_callbacks")
         runner = cbs.compile
-        e = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil, block)
-        runner.call(e).value
+        environment = ActiveSupport::Callbacks::Filters::Environment.new(model, false, nil, block)
+        runner.call(environment).value
       end
 
       def_delegators :mapper, :model_to_document
