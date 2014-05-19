@@ -247,13 +247,15 @@ module Guacamole
 
       def ==(other)
         other.instance_of?(self.class) &&
-            attributes.all? do |attribute, value|
-              other_value = other.send(attribute)
-              case value
-              when DateTime, Time then value.to_s == other_value.to_s # :(
-              else value == other_value
-              end
+          attributes.all? do |attribute, value|
+            other_value = other.send(attribute)
+            case value
+            when DateTime, Time
+              value.to_s == other_value.to_s # :(
+            else
+              value == other_value
             end
+          end
       end
       alias_method :eql?, :==
 
