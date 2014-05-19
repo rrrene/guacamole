@@ -190,7 +190,7 @@ module Guacamole
         klass.define_singleton_method("after_#{callback}") do |*args, &block|
           options = args.extract_options!
           options[:prepend] = true
-          conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |v| v != false }
+          conditional = ActiveSupport::Callbacks::Conditionals::Value.new { |value| value != false }
           options[:if] = Array(options[:if]) << conditional
           collection_class.set_callback(:"#{callback}", :after, *(args << options), &block)
         end

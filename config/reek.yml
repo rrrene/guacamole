@@ -14,7 +14,8 @@ ControlParameter:
   exclude: []
 DataClump:
   enabled: true
-  exclude: []
+  exclude:
+  - Guacamole::Model::ClassMethods
   max_copies: 2
   min_clump_size: 2
 DuplicateMethodCall:
@@ -75,6 +76,7 @@ TooManyStatements:
   - Guacamole::Model#self.define_my_callbacks
   - Guacamole::Collection::ClassMethods#create
   - Guacamole::Collection::ClassMethods#replace
+  - Guacamole::Model::ClassMethods#_define_after_my_callback
   max_statements: 5
 UncommunicativeMethodName:
   enabled: true
