@@ -6,6 +6,7 @@ require 'logger'
 require 'forwardable'
 require 'ashikawa-core'
 require 'yaml'
+require 'erb'
 
 require 'guacamole/document_model_mapper'
 
@@ -96,7 +97,8 @@ module Guacamole
       #
       # @param [String] file_name The file name of the configuration
       def load(file_name)
-        config = YAML.load_file(file_name)[current_environment.to_s]
+        yaml_content = process_file_with_erb(file_name)
+        config       = YAML.load(yaml_content)[current_environment.to_s]
 
         self.database = create_database_connection_from(config)
       end
@@ -133,6 +135,10 @@ module Guacamole
         default_logger       = Logger.new(STDOUT)
         default_logger.level = Logger::INFO
         default_logger
+      end
+
+      def process_file_with_erb(file_name)
+        ERB.new(File.read(file_name)).result
       end
     end
 

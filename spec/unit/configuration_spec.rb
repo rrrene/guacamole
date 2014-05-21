@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'guacamole/configuration'
+require 'tempfile'
 
 describe 'Guacamole.configure' do
   subject { Guacamole }
@@ -88,12 +89,13 @@ describe Guacamole::Configuration do
       allow(subject).to receive(:current_environment).and_return(current_environment)
       allow(subject).to receive(:database=)
       allow(subject).to receive(:create_database_connection_from)
+      allow(subject).to receive(:process_file_with_erb).with('config_file.yml')
       allow(config).to  receive(:[]).with('development')
-      allow(YAML).to    receive(:load_file).with('config_file.yml').and_return(config)
+      allow(YAML).to    receive(:load).and_return(config)
     end
 
     it 'should parse a YAML configuration' do
-      expect(YAML).to receive(:load_file).with('config_file.yml').and_return(config)
+      expect(YAML).to receive(:load).and_return(config)
 
       subject.load 'config_file.yml'
     end
@@ -124,6 +126,43 @@ describe Guacamole::Configuration do
       allow(subject).to receive(:create_database_connection_from).and_call_original
 
       subject.load 'config_file.yml'
+    end
+
+    context 'erb support' do
+      let(:config_file) { Tempfile.new "guacamole.yml" }
+      let(:protocol_via_erb) { ENV['ARANGODB_PROTOCOL'] = 'https' }
+      let(:database_via_erb) { ENV['ARANGODB_DATABASE'] = 'my_playground' }
+
+      before do
+        expect(subject).to receive(:process_file_with_erb).and_call_original
+        config_file.write <<-YAML
+development:
+  protocol: '<%= ENV['ARANGODB_PROTOCOL'] %>'
+  host: 'localhost'
+  port: 8529
+  database: '<%= ENV['ARANGODB_DATABASE'] %>'
+        YAML
+        config_file.close
+      end
+
+      after do
+        config_file.unlink
+        ENV.delete 'ARANGODB_PROTOCOL'
+        ENV.delete 'ARANGODB_DATABASE'
+      end
+
+      it 'should process the YAML file with ERB' do
+        processed_yaml = <<-YAML
+development:
+  protocol: '#{protocol_via_erb}'
+  host: 'localhost'
+  port: 8529
+  database: '#{database_via_erb}'
+        YAML
+        expect(YAML).to receive(:load).with(processed_yaml)
+
+        subject.load config_file.path
+      end
     end
   end
 
