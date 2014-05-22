@@ -8,4 +8,4 @@ test:
   port: 8529
   password: ''
   username: ''
-  database: '_system'
+  database: 'guacamole_acceptance_test'

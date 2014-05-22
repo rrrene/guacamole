@@ -44,6 +44,12 @@ Guacamole.configure do |config|
   config.load File.join(File.dirname(__FILE__), 'config', 'guacamole.yml')
 end
 
+begin
+  Guacamole.configuration.database.create
+rescue Ashikawa::Core::ClientError
+  # Database already exists, don't worry
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
