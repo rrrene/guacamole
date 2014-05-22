@@ -127,11 +127,12 @@ describe Guacamole::Configuration do
   end
 
   describe 'create_database_connection' do
-    let(:config_struct) { double('ConfigStruct', url: 'http://localhost', username: 'user', password: 'pass' ) }
+    let(:config_struct) { double('ConfigStruct', url: 'http://localhost', username: 'user', password: 'pass') }
     let(:arango_config) { double('ArangoConfig').as_null_object }
+    let(:database)      { double('Ashikawa::Core::Database') }
 
     before do
-      allow(Ashikawa::Core::Database).to receive(:new).and_yield(arango_config)
+      allow(Ashikawa::Core::Database).to receive(:new).and_yield(arango_config).and_return(database)
     end
 
     it 'should create the actual Ashikawa::Core::Database instance' do
@@ -147,6 +148,12 @@ describe Guacamole::Configuration do
 
       subject.create_database_connection config_struct
     end
+
+    it 'should assign the database connection to the configuration instance' do
+      subject.create_database_connection config_struct
+
+      expect(subject.database).to eq database
+    end
   end
 
   describe 'load' do
@@ -157,7 +164,6 @@ describe Guacamole::Configuration do
 
     before do
       allow(subject).to receive(:current_environment).and_return(current_environment)
-      allow(subject).to receive(:database=)
       allow(subject).to receive(:create_database_connection)
       allow(subject).to receive(:process_file_with_erb).with('config_file.yml')
       allow(subject).to receive(:build_config).and_return(config_struct)
@@ -190,7 +196,7 @@ describe Guacamole::Configuration do
     end
 
     context 'erb support' do
-      let(:config_file) { Tempfile.new "guacamole.yml" }
+      let(:config_file) { Tempfile.new 'guacamole.yml' }
       let(:protocol_via_erb) { ENV['ARANGODB_PROTOCOL'] = 'https' }
       let(:database_via_erb) { ENV['ARANGODB_DATABASE'] = 'my_playground' }
 
@@ -227,22 +233,25 @@ development:
     end
   end
 
-  describe 'configure with DATABASE_URL' do
-    context 'with authentication' do
-      let(:database_url) { 'http://username:password@locahost:8529/_db/awesome_db' }
-      let(:config_hash)  do
-      end
+  describe 'configure with a connection URI' do
+    let(:config_struct) { double('ConfigStruct') }
+    let(:connection_uri) { 'http://username:password@locahost:8529/_db/awesome_db' }
 
-      it 'should configure the database connection' do
-
-        pending
-      end
+    before do
+      allow(subject).to receive(:create_database_connection)
+      allow(subject).to receive(:build_config).and_return(config_struct)
     end
 
-    context 'without authentication' do
-      it 'should configure the database connection' do
-        pending
-      end
+    it 'should build a config_struct from the connection URI' do
+      expect(subject).to receive(:build_config).with(connection_uri)
+
+      subject.configure_with_uri(connection_uri)
+    end
+
+    it 'should use the config_struct to create the database connection' do
+      expect(subject).to receive(:create_database_connection).with(config_struct)
+
+      subject.configure_with_uri(connection_uri)
     end
   end
 

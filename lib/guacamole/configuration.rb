@@ -130,9 +130,15 @@ module Guacamole
       def load(file_name)
         yaml_content  = process_file_with_erb(file_name)
         config        = YAML.load(yaml_content)[current_environment.to_s]
-        config_struct = build_config(config)
 
-        self.database = create_database_connection(config_struct)
+        create_database_connection(build_config(config))
+      end
+
+      # Configures the database connection with a connection URI
+      #
+      # @params [String] connection_uri A URI to describe the database connection
+      def configure_with_uri(connection_uri)
+        create_database_connection build_config(connection_uri)
       end
 
       # Creates a config struct from either a hash or a DATABASE_URL
@@ -150,7 +156,7 @@ module Guacamole
       # @return [Ashikawa::Core::Database] The configured database instance
       # @api private
       def create_database_connection(config)
-        Ashikawa::Core::Database.new do |arango_config|
+        self.database = Ashikawa::Core::Database.new do |arango_config|
           arango_config.url      = config.url
           arango_config.username = config.username
           arango_config.password = config.password
