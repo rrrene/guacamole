@@ -69,6 +69,37 @@ module Guacamole
   #
   #   @return [Object] current environment
   class Configuration
+    # A wrapper object to handle both configuration from a connection URI and a hash.
+    class ConfigStruct
+      attr_reader :url, :username, :password
+
+      def initialize(config_hash_or_url)
+        case config_hash_or_url
+        when Hash
+          init_from_hash(config_hash_or_url)
+        when String
+          init_from_uri_string(config_hash_or_url)
+        end
+      end
+
+      private
+
+      def init_from_uri_string(uri_string)
+        uri       = URI.parse(uri_string)
+        @username = uri.user
+        @password = uri.password
+        uri.user  = nil
+
+        @url = uri.to_s
+      end
+
+      def init_from_hash(hash)
+        @username = hash['username']
+        @password = hash['password']
+        @url      = "#{hash['protocol']}://#{hash['host']}:#{hash['port']}/_db/#{hash['database']}"
+      end
+    end
+
     # @!visibility protected
     attr_accessor :database, :default_mapper, :logger
 
@@ -97,10 +128,34 @@ module Guacamole
       #
       # @param [String] file_name The file name of the configuration
       def load(file_name)
-        yaml_content = process_file_with_erb(file_name)
-        config       = YAML.load(yaml_content)[current_environment.to_s]
+        yaml_content  = process_file_with_erb(file_name)
+        config        = YAML.load(yaml_content)[current_environment.to_s]
+        config_struct = build_config(config)
 
-        self.database = create_database_connection_from(config)
+        self.database = create_database_connection(config_struct)
+      end
+
+      # Creates a config struct from either a hash or a DATABASE_URL
+      #
+      # @param [Hash, String] config Either a hash containing config params or a complete connection URI
+      # @return [ConfigStruct] A simple object with the required connection parameters
+      # @api private
+      def build_config(config)
+        ConfigStruct.new config
+      end
+
+      # Creates the actual Ashikawa::Core::Database instance
+      #
+      # @param [ConfigStruct] config The config object to extract the config parameters from
+      # @return [Ashikawa::Core::Database] The configured database instance
+      # @api private
+      def create_database_connection(config)
+        Ashikawa::Core::Database.new do |arango_config|
+          arango_config.url      = config.url
+          arango_config.username = config.username
+          arango_config.password = config.password
+          arango_config.logger   = logger
+        end
       end
 
       def current_environment
@@ -112,19 +167,6 @@ module Guacamole
 
       def configuration
         @configuration ||= new
-      end
-
-      def create_database_connection_from(config)
-        Ashikawa::Core::Database.new do |arango_config|
-          arango_config.url      = db_url_from(config)
-          arango_config.username = config['username']
-          arango_config.password = config['password']
-          arango_config.logger   = logger
-        end
-      end
-
-      def db_url_from(config)
-        "#{config['protocol']}://#{config['host']}:#{config['port']}/_db/#{config['database']}"
       end
 
       def rails_logger

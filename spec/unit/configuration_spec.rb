@@ -81,16 +81,87 @@ describe Guacamole::Configuration do
     end
   end
 
+  describe 'build_config' do
+    context 'from a hash' do
+      let(:config_hash) do
+        {
+          'protocol' => 'http',
+          'host'     => 'localhost',
+          'port'     => 8529,
+          'username' => 'username',
+          'password' => 'password',
+          'database' => 'awesome_db'
+        }
+      end
+      let(:config_struct) { subject.build_config(config_hash) }
+
+      it 'should create a struct with a database URL' do
+        expect(config_struct.url).to eq 'http://localhost:8529/_db/awesome_db'
+      end
+
+      it 'should create a struct with a username' do
+        expect(config_struct.username).to eq 'username'
+      end
+
+      it 'should create a struct with password' do
+        expect(config_struct.password).to eq 'password'
+      end
+    end
+
+    context 'from a URL' do
+      let(:database_url) { 'http://username:password@localhost:8529/_db/awesome_db' }
+      let(:config_struct) { subject.build_config(database_url) }
+
+      it 'should create a struct with a database URL' do
+        expect(config_struct.url).to eq 'http://localhost:8529/_db/awesome_db'
+      end
+
+      it 'should create a struct with a username' do
+        expect(config_struct.username).to eq 'username'
+      end
+
+      it 'should create a struct with password' do
+        expect(config_struct.password).to eq 'password'
+      end
+    end
+  end
+
+  describe 'create_database_connection' do
+    let(:config_struct) { double('ConfigStruct', url: 'http://localhost', username: 'user', password: 'pass' ) }
+    let(:arango_config) { double('ArangoConfig').as_null_object }
+
+    before do
+      allow(Ashikawa::Core::Database).to receive(:new).and_yield(arango_config)
+    end
+
+    it 'should create the actual Ashikawa::Core::Database instance' do
+      expect(arango_config).to receive(:url=).with('http://localhost')
+      expect(arango_config).to receive(:username=).with('user')
+      expect(arango_config).to receive(:password=).with('pass')
+
+      subject.create_database_connection config_struct
+    end
+
+    it 'should pass the Guacamole logger to the Ashikawa::Core::Database connection' do
+      expect(arango_config).to receive(:logger=).with(subject.logger)
+
+      subject.create_database_connection config_struct
+    end
+  end
+
   describe 'load' do
     let(:config) { double('Config') }
+    let(:env_config) { double('ConfigForEnv') }
+    let(:config_struct) { double('ConfigStruct') }
     let(:current_environment) { 'development' }
 
     before do
       allow(subject).to receive(:current_environment).and_return(current_environment)
       allow(subject).to receive(:database=)
-      allow(subject).to receive(:create_database_connection_from)
+      allow(subject).to receive(:create_database_connection)
       allow(subject).to receive(:process_file_with_erb).with('config_file.yml')
-      allow(config).to  receive(:[]).with('development')
+      allow(subject).to receive(:build_config).and_return(config_struct)
+      allow(config).to  receive(:[]).with('development').and_return(env_config)
       allow(YAML).to    receive(:load).and_return(config)
     end
 
@@ -106,24 +177,14 @@ describe Guacamole::Configuration do
       subject.load 'config_file.yml'
     end
 
-    it 'should create an Ashikawa::Core::Database instance based on configuration' do
-      arango_config = double('ArangoConfig')
-      expect(arango_config).to receive(:url=).with('http://localhost:8529/_db/test_db')
-      expect(arango_config).to receive(:username=).with('')
-      expect(arango_config).to receive(:password=).with('')
-      expect(arango_config).to receive(:logger=).with(subject.logger)
+    it 'should create a database config struct from config file' do
+      expect(subject).to receive(:build_config).with(env_config).and_return(config_struct)
 
-      allow(Ashikawa::Core::Database).to receive(:new).and_yield(arango_config)
+      subject.load 'config_file.yml'
+    end
 
-      allow(config).to  receive(:[]).with('development').and_return(
-        'protocol' => 'http',
-        'host'     => 'localhost',
-        'port'     => 8529,
-        'username' => '',
-        'password' => '',
-        'database' => 'test_db'
-      )
-      allow(subject).to receive(:create_database_connection_from).and_call_original
+    it 'should create the database connection with a config struct' do
+      expect(subject).to receive(:create_database_connection).with(config_struct)
 
       subject.load 'config_file.yml'
     end
@@ -162,6 +223,25 @@ development:
         expect(YAML).to receive(:load).with(processed_yaml)
 
         subject.load config_file.path
+      end
+    end
+  end
+
+  describe 'configure with DATABASE_URL' do
+    context 'with authentication' do
+      let(:database_url) { 'http://username:password@locahost:8529/_db/awesome_db' }
+      let(:config_hash)  do
+      end
+
+      it 'should configure the database connection' do
+
+        pending
+      end
+    end
+
+    context 'without authentication' do
+      it 'should configure the database connection' do
+        pending
       end
     end
   end
