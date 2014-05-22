@@ -158,6 +158,13 @@ module Guacamole
         end
       end
 
+      # The current environment.
+      #
+      # If you're in a Rails application this will return the Rails environment. If Rails is
+      # not available it will use `RACK_ENV` and if that is not available it will fall back to
+      # `GUACAMOLE_ENV`. This allows you to use Guacamole not only in Rails.
+      #
+      # @return [String] The current environment
       def current_environment
         return Rails.env if defined?(Rails)
         ENV['RACK_ENV'] || ENV['GUACAMOLE_ENV']
