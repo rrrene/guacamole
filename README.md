@@ -59,6 +59,8 @@ development:
   database: 'pony_blog_development'
 ```
 
+**Note**: If you use something like [dotenv](https://github.com/bkeepers/dotenv) we will process the config file with ERB before loading the YAML. Another way to configure the database connection is to provide a connection URI like this: `http://user:pass@localhost:8529/_db/pony_ville_db`. If you don't use authentication, just skip the user/password part. The connection URI must be provided as the environment variable `DATABASE_URL` and has precedence over the config file.
+
 After you created a configuration file you can create the database as in any other Rails project:
 
 ```shell
